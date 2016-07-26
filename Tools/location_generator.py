@@ -9,8 +9,7 @@ parser.add_argument("-st", "--steps", help="steps")
 parser.add_argument("-lp", "--leaps", help="like 'steps' but for workers instead of scans")
 
 R = 6378137.0
-
-r_hex = 149.9497/2.0
+r_hex = 75.0
 
 args = parser.parse_args()
 st = (int)(args.steps)
@@ -18,7 +17,7 @@ wst = (int)(args.leaps)
 
 w_worker = (2 * st - 1) * r_hex
 d = 2 * w_worker
-
+d = math.sqrt(d**2+86.6**2)
 total_workers = 1
 
 for i in range(1, wst):
@@ -54,17 +53,16 @@ for i in range(1, total_workers):
         jump += 1
         turn_steps += 1
         turn_steps_so_far = turn_steps
-        brng = math.radians(0)
+        brng = math.atan(1.732/(6*(st-1)+3))
     lat2 = math.asin( math.sin(lat1)*math.cos(d/R) +
                       math.cos(lat1)*math.sin(d/R)*math.cos(brng))
-
     lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
                              math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
 
     lat[i] = lat2
     lon[i] = lon2
     if i in jump_points:
-        brng = math.radians(60)
+        brng = math.radians(60.0) + math.atan(1.732/(6*(st-1)+3))
     if turn_steps_so_far == turn_steps:
         brng += math.radians(60.0)
         turn_steps_so_far = 0
