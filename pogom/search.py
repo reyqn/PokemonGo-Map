@@ -13,7 +13,6 @@ Search Architecture:
 '''
 
 import logging
-import sys
 import time
 import math
 import threading
@@ -35,17 +34,9 @@ api = PGoApi()
 # Constants for Hex Grid
 # Gap between vertical and horzonal "rows"
 lat_gap_meters = 150
-lng_gap_meters = 86.6
-
-# 111111m is approx 1 degree Lat, which is close enough for this
-meters_per_degree = 111111
-lat_gap_degrees = float(lat_gap_meters) / meters_per_degree
+lng_gap_meters = math.sqrt(3)*50
 
 search_queue = Queue()
-
-def calculate_lng_degrees(lat):
-    return float(lng_gap_meters) / (meters_per_degree * math.cos(math.radians(lat)))
-
 
 def send_map_request(api, position):
     try:
@@ -62,6 +53,13 @@ def send_map_request(api, position):
 
 
 def generate_location_steps(initial_location, num_steps):
+    # Calculate the length of a degree of latitude and longitude in meters
+    lat = math.radians(initial_location[0])
+    meters_per_degree_lat = 111132.92 + (-559.82 * math.cos(2 * lat)) + (1.175 * math.cos(4 * lat)) + (-0.0023 * math.cos(6 * lat))
+    meters_per_degree_lng  = (111412.84 * math.cos(lat)) + (-93.5 * math.cos(3 * lat)) + (0.118 * math.cos(5 * lat))
+
+    lat_gap_degrees = float(lat_gap_meters) / meters_per_degree_lat
+    lng_gap_degrees = lng_gap_meters / meters_per_degree_lng
 
     ring = 1 # Which ring are we on, 0 = center
     lat_location = initial_location[0]
@@ -73,31 +71,31 @@ def generate_location_steps(initial_location, num_steps):
         # Move the location diagonally to top left spot, then start the circle which will end up back here for the next ring
         # Move Lat north first
         lat_location += lat_gap_degrees
-        lng_location -= calculate_lng_degrees(lat_location)
+        lng_location -= lng_gap_degrees
 
         for direction in range(6):
             for i in range(ring):
                 if direction == 0: #Right
-                    lng_location += calculate_lng_degrees(lat_location) * 2
+                    lng_location += lng_gap_degrees * 2
 
                 if direction == 1: #Right Down
                     lat_location -= lat_gap_degrees
-                    lng_location += calculate_lng_degrees(lat_location)
+                    lng_location += lng_gap_degrees
 
                 if direction == 2: #Left Down
                     lat_location -= lat_gap_degrees
-                    lng_location -= calculate_lng_degrees(lat_location)
+                    lng_location -= lng_gap_degrees
 
                 if direction == 3: #Left
-                    lng_location -= calculate_lng_degrees(lat_location) * 2
+                    lng_location -= lng_gap_degrees * 2
 
                 if direction == 4: #Left Up
                     lat_location += lat_gap_degrees
-                    lng_location -= calculate_lng_degrees(lat_location)
+                    lng_location -= lng_gap_degrees
 
                 if direction == 5: #Right Up
                     lat_location += lat_gap_degrees
-                    lng_location += calculate_lng_degrees(lat_location)
+                    lng_location += lng_gap_degrees
 
                 yield (lat_location, lng_location, 0) #Middle circle
 
