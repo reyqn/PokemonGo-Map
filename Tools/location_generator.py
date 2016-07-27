@@ -24,7 +24,7 @@ for i in range(1, wst):
     total_workers += 6*(i)
 
 
-brng = math.radians(0)
+brng = math.atan(1.732/(6*(st-1)+3))
 
 lon = [0] * total_workers
 lat = [0] * total_workers

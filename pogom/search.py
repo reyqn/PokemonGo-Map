@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import sys
 import time
 import math
 
@@ -98,7 +99,7 @@ def login(args, position):
 
     while not api.login(args.auth_service, args.username, args.password):
         log.info('Failed to login to Pokemon Go. Trying again.')
-        time.sleep(config['REQ_SLEEP'])
+        time.sleep(1)
 
     log.info('Login to Pokemon Go successful.')
 
@@ -133,9 +134,9 @@ def search_thread(args):
                         response_dict = {}
             else:
                 log.info('Map Download failed. Trying again.')
-                time.sleep(config['REQ_SLEEP'])
+                time.sleep(1)
 
-        time.sleep(config['REQ_SLEEP'])
+        time.sleep(1)
 
 def process_search_threads(search_threads, curr_steps, total_steps):
     for thread in search_threads:
@@ -183,14 +184,15 @@ def search(args, i):
 def search_loop(args):
     i = 0
     try:
-        while True:
+        while (not args.single_scan) or i == 0 :
             log.info("Map iteration: {}".format(i))
             search(args, i)
             log.info("Scanning complete.")
-            if args.scan_delay > 1:
+            if args.scan_delay > 1 and i > 0:
                 log.info('Waiting {:f} seconds before beginning new scan.'.format(args.scan_delay))
                 time.sleep(args.scan_delay)
             i += 1
+	sys.exit(1);
 
     # This seems appropriate
     except Exception as e:

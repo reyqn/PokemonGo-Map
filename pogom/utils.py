@@ -60,6 +60,7 @@ def get_args():
     parser.add_argument('--db-user', help='Username for the database')
     parser.add_argument('--db-pass', help='Password for the database')
     parser.add_argument('--db-host', help='IP or hostname for the database')
+    parser.add_argument('-ss', '--single-scan', help='Scans the map once then shuts down searcher.', action='store_true', default=False, dest='single_scan')
     parser.set_defaults(DEBUG=False)
 
     args = parser.parse_args()
